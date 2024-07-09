@@ -33,9 +33,9 @@ Learn more about the Llama2 models & architecture at Meta: [Llama 2 @ Meta](http
 
 # Features & Milestones
 
-#### Llama 3 Support
+#### Llama 3 Support WIP
 
-Almost done - Coming Soonish (TM)...
+Should support inference, WIP, use -l 3 option...
 
 #### L2E OS (Linux Kernel)
 
