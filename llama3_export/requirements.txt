@@ -1,0 +1,8 @@
+blobfile==2.1.1
+numpy
+pytest==8.2.0
+Requests
+tiktoken==0.6.0
+torch
+tqdm
+wandb==0.16.6

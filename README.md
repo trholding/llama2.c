@@ -603,7 +603,7 @@ wget https://huggingface.co/karpathy/tinyllamas/resolve/main/stories15M.bin -O o
  
 ## Changelog
 
-See commits.
+See commits. Going forward we will diverge wildly from karpathy llama2.c
 
 ## Contributing
 
@@ -615,25 +615,30 @@ See commits.
 
 See "Developer Status" issue.
 
-Current status: Busy since Aug ~6 2023, away on bigger IRL projects. Just merging stuff. Addressing all issues every ~7 days.
-
 # Gratitude & Credits
 
 Thank you to to the creators of the following libraries and tools and their contributors:
 
-- [llama2.c](https://github.com/karpathy/llama2.c) - @karpathy
-- [cosmopolitan](https://github.com/jart/cosmopolitan) - @jart
-- [OpenBlas](https://github.com/xianyi/OpenBLAS) - @xianyi
-- [blis](https://github.com/flame/blis) - @flame
-- [CLBlast](https://github.com/CNugteren/CLBlast) - @CNugteren
-- [incbin](https://github.com/graphitemaster/incbin) - @graphitemaster
-- [strliteral](https://github.com/mortie/strliteral) - @mortie
-- [unikraft](https://github.com/unikraft) - @unikraft
+- [Meta] (https://llama.meta.com/) - @facebook - Creators of llama2 and llama3
+- [llama2.c](https://github.com/karpathy/llama2.c) - @karpathy - The initiator and guru
+- [cosmopolitan](https://github.com/jart/cosmopolitan) - @jart - Toolchain that makes write once run anyehere possible
+- [OpenBlas](https://github.com/xianyi/OpenBLAS) - @xianyi - BLAS acceleration
+- [blis](https://github.com/flame/blis) - @flame - BLIS BLAS acceleration
+- [CLBlast](https://github.com/CNugteren/CLBlast) - @CNugteren - OpenCL BLAS acceleration
+- [incbin](https://github.com/graphitemaster/incbin) - @graphitemaster - Include assets in binaries
+- [strliteral](https://github.com/mortie/strliteral) - @mortie - Include assets in binaries
+- [unikraft](https://github.com/unikraft) - @unikraft - Run as unikernel
+- [linux](https://https://www.kernel.org/) - @torvalds - Kernel used in L2E OS
+- [limine](https://github.com/limine-bootloader/limine) - @mintsuki - Bootloader for L2E OS
+- [llama3.c](https://github.com/jameswdelancey/llama3.c) - @jameswdelancey - export script for llama tokenizer
+- Many more 
 
 
-## Notable projects
+## Other cool and notable projects
 - [llama.cpp](https://github.com/ggerganov/llama.cpp)
 - [llama2.c](https://github.com/karpathy/llama2.c)
+- [llamafile](https://github.com/Mozilla-Ocho/llamafile)
+- [llama3.c](https://github.com/jameswdelancey/llama3.c)
 
 ## License
 
