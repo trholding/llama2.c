@@ -35,7 +35,45 @@ Learn more about the Llama2 models & architecture at Meta: [Llama 2 @ Meta](http
 
 #### Llama 3 Support WIP
 
-Should support inference, WIP, use -l 3 option...
+Llama3 models work now.
+
+* Non quantized (fp32) is supported. run supports both llama2 and llama3 with -l 3 option.
+* Quantized inference will be supported soon. Right now runq supports only llama2.
+
+First you'll need to obtain approval from Meta to download llama3 models on hugging face.
+
+So go to https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct, fill the form and then
+go to https://huggingface.co/settings/gated-repos see acceptance status. Once accepted, do the following to download model, export and run. 
+
+```bash
+huggingface-cli download meta-llama/Meta-Llama-3-8B-Instruct --include "original/*" --local-dir Meta-Llama-3-8B-Instruct
+
+git clone https://github.com/trholding/llama2.c.git
+
+cd llama2.c/
+
+# Export fp32
+python3 export.py ../llama3_8b_instruct.bin --meta-llama ../Meta-Llama-3-8B-Instruct/original/
+
+# Export Quantized 8bit (We do not need this now)
+#python3 export.py ../llama3_8b_instruct_q8.bin --version 2 --meta-llama ../Meta-Llama-3-8B-Instruct/original/
+
+make run_cc_openblas
+# or make run_cc_openmp, or do make to see all builds 
+
+# Test llama3 inference, it should generate sensible text very slowly
+./run ../llama3_8b_instruct.bin -z tokenizer_l3.bin -l 3
+
+```
+
+Export should take about 10-15 minutes. But on slow systems or without enough RAM, you will need to add a swapfile (which you can later swapoff and delete). Export with swap could take much longer, like an hour or more for example on an oracle cloud aarch64 instance with 24GB RAM and 4 vCPUs it took more than an hour. This is how you enable swap:
+
+```bash
+sudo fallocate -l 32G swapfile
+sudo chmod 600 swapfile
+sudo mkswap swapfile 
+sudo swapon swapfile
+```
 
 #### L2E OS (Linux Kernel)
 
@@ -116,7 +154,7 @@ Read more:
 - [x] CBLAS
 - [x] BLIS
 - [x] Intel MKL 
-- [ ] ArmPL (WIP)
+- [x] ArmPL
 - [ ] Apple Accelerate Framework (CBLAS) (WIP/Testing)
 
 **CPU/GPU**
@@ -340,12 +378,27 @@ Requires [Intel oneAPI MKL](https://www.intel.com/content/www/us/en/developer/to
 
 **Arm Performance Library (ArmPL)**
 
-This build enables acceleration via Arm Performance Library on ARM64 systems such as Linux or Mac OS - WIP
+This build enables acceleration via Arm Performance Library on ARM64 systems such as Linux or Mac OS 
+
+First you'll need to download ArmPL and install it:
 
 ```bash
+wget https://developer.arm.com/-/cdn-downloads/permalink/Arm-Performance-Libraries/Version_24.04/arm-performance-libraries_24.04_deb_gcc.tar
+
+tar -xvf arm-performance-libraries_24.04_deb_gcc.tar 
+cd arm-performance-libraries_24.04_deb/
+sudo ./arm-performance-libraries_24.04_deb.sh 
+# You'll have to accept their license agreement. Type yes as answers
+sudo apt install environment-modules
+# Now you need to log out of your shell and log in back again
+export MODULEPATH=$MODULEPATH:/opt/arm/modulefiles/
+module load armpl/24.04.0_gcc
+# From the same shell do
 make run_cc_armpl
 ```
 Requires [ArmPL](https://developer.arm.com/Tools%20and%20Software/Arm%20Performance%20Libraries) to be installed on system.
+
+Also requires the environment-modules package for your OS / Distro [Environment Modules](https://modules.sourceforge.net/)
 
 **Apple Accelerate**
 
@@ -619,7 +672,7 @@ See "Developer Status" issue.
 
 Thank you to to the creators of the following libraries and tools and their contributors:
 
-- [Meta] (https://llama.meta.com/) - @facebook - Creators of llama2 and llama3
+- [Meta](https://llama.meta.com/) - @facebook - Creators of llama2 and llama3
 - [llama2.c](https://github.com/karpathy/llama2.c) - @karpathy - The initiator and guru
 - [cosmopolitan](https://github.com/jart/cosmopolitan) - @jart - Toolchain that makes write once run anyehere possible
 - [OpenBlas](https://github.com/xianyi/OpenBLAS) - @xianyi - BLAS acceleration

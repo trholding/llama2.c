@@ -142,7 +142,7 @@ runq_cc_blis: ##		- Same for quantized build
 
 ##@ Special Builds 
 ##@ ---> x86_64
-# amd64 (x86_64) / Intel Mac (WIP) Do not use!
+# amd64 (x86_64) / Intel Mac 
 .PHONY: run_cc_mkl 
 run_cc_mkl: ##		- ***NEW*** OpenMP + Intel MKL CBLAS build (x86_64 / intel Mac)
 	$(CC) -D MKL -D OPENMP -Ofast -fopenmp -march=native -mtune=native -I$(MKL_INC) -L$(MKL_LIB) run.c -lmkl_rt -lpthread $(BOLT) -lm -o run	
@@ -153,7 +153,7 @@ runq_cc_mkl: ##		- Same for quantized build
 
 ##@ ---> ARM64 / aarch64
 .PHONY: run_cc_armpl
-run_cc_armpl: ##		- ARM PL BLAS accelerated build (ARM64 & Mac)  (WIP)
+run_cc_armpl: ##		- ARM PL BLAS accelerated build (aarch64)
 	$(CC) -D ARMPL -D OPENMP -Ofast -fopenmp -march=native -mtune=native run.c $(BOLT) -lm -larmpl_lp64_mp -o run
 
 .PHONY: runq_cc_armpl
