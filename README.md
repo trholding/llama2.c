@@ -38,7 +38,8 @@ Learn more about the Llama2 models & architecture at Meta: [Llama 2 @ Meta](http
 Llama3 models work now.
 
 * Non quantized (fp32) is supported. run supports both llama2 and llama3 with -l 3 option.
-* Quantized inference will be supported soon. Right now runq supports only llama2.
+* Quantized inference with runq supported now.
+* Known issues - chat mode doesn't work yet, fix coming soonish
 
 First you'll need to obtain approval from Meta to download llama3 models on hugging face.
 
