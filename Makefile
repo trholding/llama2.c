@@ -126,19 +126,19 @@ runq_cc_openblas: ##		- Same for quantized build
 
 .PHONY: run_cc_cblas
 run_cc_cblas: ##		- Generic CBLAS accelerated build
-	$(CC) -D CBLAS -Ofast -fopenmp -march=native -mtune=native run.c $(BOLT) -lm -lcblas -o run
+	$(CC) -D OPENMP -D CBLAS -Ofast -fopenmp -march=native -mtune=native run.c $(BOLT) -lm -lcblas -o run
 
 .PHONY: runq_cc_cblas
 runq_cc_cblas: ##		- Same for quantized build
-	$(CC) -D CBLAS -Ofast -fopenmp -march=native -mtune=native runq.c $(BOLT) -lm -lcblas -o run
+	$(CC) -D OPENMP -D CBLAS -Ofast -fopenmp -march=native -mtune=native runq.c $(BOLT) -lm -lcblas -o run
 
 .PHONY: run_cc_blis
 run_cc_blis: ##		- BLIS accelerated build
-	$(CC) -D BLIS -Ofast -fopenmp -march=native -mtune=native -I$(BLIS_INC) run.c $(BOLT) -lm -lblis -o run
+	$(CC) -D OPENMP -D BLIS -Ofast -fopenmp -march=native -mtune=native -I$(BLIS_INC) run.c $(BOLT) -lm -lblis -o run
 	
 .PHONY: runq_cc_blis
 runq_cc_blis: ##		- Same for quantized build
-	$(CC) -D BLIS -Ofast -fopenmp -march=native -mtune=native -I$(BLIS_INC) runq.c $(BOLT) -lm -lblis -o run
+	$(CC) -D OPENMP -D BLIS -Ofast -fopenmp -march=native -mtune=native -I$(BLIS_INC) runq.c $(BOLT) -lm -lblis -o run
 
 ##@ Special Builds 
 ##@ ---> x86_64
