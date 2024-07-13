@@ -37,9 +37,29 @@ Learn more about the Llama2 models & architecture at Meta: [Llama 2 @ Meta](http
 
 Llama3 models work now.
 
+Sample output:
+
+```
+./run ../llama3_8b_instruct_q8.bin -z tokenizer_l3.bin -l 3 -i " My cat"
+My cat's got a whole lot of livin' to do!" She walked out, leaving me with the blank look of a drunk who'd just had a song stuck in his head. I stared after her, feeling like I was trapped in a surreal episode of "The Twilight Zone."
+
+As I turned back to the bar, I spotted a familiar figure at the end of the counter. It was Mitch, the bartender, polishing a mug with a dirty rag. I slid onto the stool beside him and said, "That's one strange lady, Mitch."
+
+Mitch looked up and raised an eyebrow. "You're telling me. She's been in here a few times, always ordering weird drinks and singing along to her own personal soundtrack. I think she's got a tape playing in her head and she's trying to sing along."
+
+I laughed. "I think you're right. She's like the 21st-century equivalent of that crazy lady who used to sing 'My Way' at the piano in the department store."
+
+Mitch chuckled. "Yeah, only instead of 'My Way,' she's got a cat with a whole lot of livin' to do."
+
+I clinked my glass against his. "To the strange and wonderful patrons of this fine establishment."
+
+
+achieved tok/s: 4.356963
+```
+
 * Non quantized (fp32) is supported. run supports both llama2 and llama3 with -l 3 option.
 * Quantized inference with runq supported now.
-* Known issues - chat mode doesn't work yet, fix coming soonish
+* Known issues - Swallows first token (add space for now), chat mode doesn't work yet, fix coming soonish
 
 First you'll need to obtain approval from Meta to download llama3 models on hugging face.
 
@@ -56,8 +76,8 @@ cd llama2.c/
 # Export fp32
 python3 export.py ../llama3_8b_instruct.bin --meta-llama ../Meta-Llama-3-8B-Instruct/original/
 
-# Export Quantized 8bit (We do not need this now)
-#python3 export.py ../llama3_8b_instruct_q8.bin --version 2 --meta-llama ../Meta-Llama-3-8B-Instruct/original/
+# Export Quantized 8bit 
+python3 export.py ../llama3_8b_instruct_q8.bin --version 2 --meta-llama ../Meta-Llama-3-8B-Instruct/original/
 
 make run_cc_openblas
 # or make run_cc_openmp, or do make to see all builds 
