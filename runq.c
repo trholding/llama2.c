@@ -10,7 +10,7 @@
 int buffertokens = 1;     // output token buffer size
 int stats = 1;     // extended status info
 int llamaver = 2; // llama version (default is 2, valid 2 & 3)
-float rope_sf = 10000.0; // Rope scaling factor, 10000.0 => llama2, 500000.0 > llama3
+float rope_tf = 10000.0; // Rope tetha or frequency, 10000.0 => llama2, 500000.0 > llama3
 int BOS = 1; // Beginning of Sentence token value, llama2 = 1 , llama3 = 128000
 int EOS = 2; // End of Sentence token value, llama2 = 2 , llama3 = 128009 (end of text)
 char system_template[1024]="";
@@ -129,9 +129,9 @@ __static_yoink("zipos");
 
 // Portable OpenMP and OpenACC pragma macros
 #ifdef OPENMP
-#define ACCEL(VAR) MK_PRAGMA(omp parallel for private(VAR))
+#define ACCEL(...) MK_PRAGMA(omp parallel for private(__VA_ARGS__))
 #elif defined(OPENACC)
-#define ACCEL(VAR) MK_PRAGMA(acc parallel loop private(VAR))
+#define ACCEL(...) MK_PRAGMA(acc parallel loop private(__VA_ARGS__))
 #endif
 
 // ----------------------------------------------------------------------------
@@ -513,23 +513,47 @@ void matmul(float* xout, QuantizedTensor *x, QuantizedTensor *w, int n, int d) {
     // by far the most amount of time is spent inside this little function
     // inputs to this function are both quantized
 
-    int i;
 // L2E Addition
-    /* #ifdef BLAS // TODO: FIX INTQ8
-    cblas_sgemv(CblasRowMajor, CblasNoTrans, d, n, 1.0f, w, n, x, 1, 0.0f, xout, 1);
-    #else */
+
+    #ifdef BLAS
+    int i;
+    int j;
+    
+    // Convert quantized tensors to floating point
+    float* w_fp = malloc(d * n * sizeof(float));
+    float* x_fp = malloc(n * sizeof(float));
+
     #ifdef ACCEL
-    ACCEL(i) // OMP/OACC Macro
-    #endif
-// END L2E Addition
+    ACCEL(i, j) // OMP/OACC Macro
+    #endif     
     for (i = 0; i < d; i++) {
+        for (j = 0; j < n; j++) {
+            w_fp[i * n + j] = ((float) w->q[i * n + j]) * w->s[i / GS];
+        }
+    }
+
+    #ifdef ACCEL
+    ACCEL(j) // OMP/OACC Macro
+    #endif    
+    for (j = 0; j < n; j++) {
+        x_fp[j] = ((float) x->q[j]) * x->s[j / GS];
+    }
+
+    cblas_sgemv(CblasRowMajor, CblasNoTrans, d, n, 1.0f, w_fp, n, x_fp, 1, 0.0f, xout, 1);
+
+    // Free memory
+    free(w_fp);
+    free(x_fp);
+
+    #else
+// END L2E Addition
+    for (int i = 0; i < d; i++) {
         float val = 0.0f;
         int32_t ival = 0;
         int in = i * n;
 
         // do the matmul in groups of GS
-        int j;
-        for (j = 0; j <= n - GS; j += GS) {
+        for (int j = 0; j <= n - GS; j += GS) {
             for (int k = 0; k < GS; k++) {
                 ival += ((int32_t) x->q[j + k]) * ((int32_t) w->q[in + j + k]);
             }
@@ -539,7 +563,7 @@ void matmul(float* xout, QuantizedTensor *x, QuantizedTensor *w, int n, int d) {
         xout[i] = val;
     }
 // L2E Addition
-    /* #endif */
+    #endif 
 // END L2E Addition 
 }
 
@@ -575,7 +599,7 @@ float* forward(Transformer* transformer, int token, int pos) {
         for (int i = 0; i < dim; i+=2) {
             int head_dim = i % head_size;
 // L2E Addition
-            float freq = 1.0f / powf(rope_sf, head_dim / (float)head_size);
+            float freq = 1.0f / powf(rope_tf, head_dim / (float)head_size);
 // END L2E Addition
             float val = pos * freq;
             float fcr = cosf(val);
@@ -1419,7 +1443,7 @@ int main(int argc, char *argv[]) {
 // END L2E Addition
         else { error_usage(); }
     }
-    if (llamaver == 3){ rope_sf = 500000.0; }
+    if (llamaver == 3){ rope_tf = 500000.0; }
 // L2E Addition
     #endif
 // END L2E Addition

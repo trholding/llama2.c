@@ -10,7 +10,7 @@
 int buffertokens = 1;     // output token buffer size
 int stats = 1;     // extended status info
 int llamaver = 2; // llama version (default is 2, valid 2 & 3)
-float rope_sf = 10000.0; // Rope scaling factor, 10000.0 => llama2, 500000.0 > llama3
+float rope_tf = 10000.0; // Rope tetha or frequency, 10000.0 => llama2, 500000.0 > llama3
 int BOS = 1; // Beginning of Sentence token value, llama2 = 1 , llama3 = 128000
 int EOS = 2; // End of Sentence token value, llama2 = 2 , llama3 = 128009 (end of text)
 char system_template[1024]="";
@@ -136,9 +136,9 @@ __static_yoink("zipos");
 
 // Portable OpenMP and OpenACC pragma macros
 #ifdef OPENMP
-#define ACCEL(VAR) MK_PRAGMA(omp parallel for private(VAR))
+#define ACCEL(...) MK_PRAGMA(omp parallel for private(__VA_ARGS__))
 #elif defined(OPENACC)
-#define ACCEL(VAR) MK_PRAGMA(acc parallel loop private(VAR))
+#define ACCEL(...) MK_PRAGMA(acc parallel loop private(__VA_ARGS__))
 #endif
 
 // ----------------------------------------------------------------------------
@@ -557,7 +557,7 @@ float* forward(Transformer* transformer, int token, int pos) {
         for (int i = 0; i < dim; i+=2) {
             int head_dim = i % head_size;
 // L2E Addition
-            float freq = 1.0f / powf(rope_sf, head_dim / (float)head_size);
+            float freq = 1.0f / powf(rope_tf, head_dim / (float)head_size);
 // END L2E Addition
             float val = pos * freq;
             float fcr = cosf(val);
@@ -1399,7 +1399,7 @@ int main(int argc, char *argv[]) {
 // END L2E Addition
         else { error_usage(); }
     }
-    if (llamaver == 3){ rope_sf = 500000.0; }
+    if (llamaver == 3){ rope_tf = 500000.0; }
 // L2E Addition
     #endif
 // END L2E Addition
