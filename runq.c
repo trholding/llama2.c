@@ -734,16 +734,8 @@ float* forward(Transformer* transformer, int token, int pos) {
         // Now for FFN in PyTorch we have: self.w2(F.silu(self.w1(x)) * self.w3(x))
         // first calculate self.w1(x) and self.w3(x)
         quantize(&s->xq, s->xb, dim);
-
-// L2E Addition
-        #pragma omp parallel sections
-        {
-        #pragma omp section        
         matmul(s->hb, &s->xq, w->w1 + l, dim, hidden_dim);
-        #pragma omp section
         matmul(s->hb2, &s->xq, w->w3 + l, dim, hidden_dim);
-        }
-// END L2E Addition
 
         // SwiGLU non-linearity
         for (int i = 0; i < hidden_dim; i++) {
