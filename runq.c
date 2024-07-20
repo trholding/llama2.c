@@ -506,8 +506,6 @@ void rmsnorm(float* o, float* x, float* weight, int size) {
     #ifdef BLAS
     ss = cblas_sdot(size, x, 1.0f, x, 1.0f);
     #else
-// END L2E Addition
-// L2E Addition
     #ifdef ACCEL
     ACCELRD(ss) // OMP/OACC Macro
     #endif
@@ -727,6 +725,11 @@ float* forward(Transformer* transformer, int token, int pos) {
         matmul(s->xb2, &s->xq, w->wo + l, dim, dim);
 
         // residual connection back into x
+// L2E Addition
+        #ifdef ACCEL
+        ACCELS() // OMP/OACC Macro
+        #endif
+// END L2E Addition
         for (int i = 0; i < dim; i++) {
             x[i] += s->xb2[i];
         }
@@ -741,6 +744,11 @@ float* forward(Transformer* transformer, int token, int pos) {
         matmul(s->hb2, &s->xq, w->w3 + l, dim, hidden_dim);
 
         // SwiGLU non-linearity
+// L2E Addition
+        #ifdef ACCEL
+        ACCELS() // OMP/OACC Macro
+        #endif
+// END L2E Addition
         for (int i = 0; i < hidden_dim; i++) {
             float val = s->hb[i];
             // silu(x)=x*σ(x), where σ(x) is the logistic sigmoid
