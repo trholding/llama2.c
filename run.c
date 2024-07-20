@@ -1,4 +1,4 @@
-/* Inference for Llama-2 Transformer model in pure C */
+/* Inference for Llama 2 & LLama 3 Transformer model in pure C */
 
 // L2E Addition
 /* The Llama 2 Everywhere @trholding (Vulcan) fork   */
@@ -121,14 +121,11 @@ __static_yoink("zipos");
 #endif
 
 // ----------------------------------------------------------------------------
-// AVX Support
-
-#ifdef ACCELAVX
-#include <immintrin.h>
-#endif
-
-// ----------------------------------------------------------------------------
 // OpenMP and OpenACC Support
+
+#ifdef OPENMP
+#include <omp.h>
+#endif
 
 // Macro that makes a pragma enabled with string substitution
 #define MKPRAGMA_(x) _Pragma (#x)
@@ -136,9 +133,20 @@ __static_yoink("zipos");
 
 // Portable OpenMP and OpenACC pragma macros
 #ifdef OPENMP
+#define ACCELS() MK_PRAGMA(omp parallel for)
 #define ACCEL(...) MK_PRAGMA(omp parallel for private(__VA_ARGS__))
+#define ACCELRD(VAR) MK_PRAGMA(omp parallel for reduction(+:VAR))
 #elif defined(OPENACC)
+#define ACCELS() MK_PRAGMA(acc parallel loop)
 #define ACCEL(...) MK_PRAGMA(acc parallel loop private(__VA_ARGS__))
+#define ACCELRD(VAR) MK_PRAGMA(acc parallel loop reduction(+:VAR))
+#endif
+
+// ----------------------------------------------------------------------------
+// AVX Support
+
+#ifdef ACCELAVX
+#include <immintrin.h>
 #endif
 
 // ----------------------------------------------------------------------------
@@ -355,6 +363,9 @@ void rmsnorm(float* o, float* x, float* weight, int size) {
     #ifdef BLAS
     ss = cblas_sdot(size, x, 1.0f, x, 1.0f);
     #else
+    #ifdef ACCEL
+    ACCELRD(ss) // OMP/OACC Macro
+    #endif
 // END L2E Addition
     for (int j = 0; j < size; j++) {
         ss += x[j] * x[j];
@@ -366,6 +377,11 @@ void rmsnorm(float* o, float* x, float* weight, int size) {
     ss += 1e-5f;
     ss = 1.0f / sqrtf(ss);
     // normalize and scale
+// L2E Addition
+    #ifdef ACCEL
+    ACCELS() // OMP/OACC Macro
+    #endif
+// END L2E Addition
     for (int j = 0; j < size; j++) {
         o[j] = weight[j] * (ss * x[j]);
     }
@@ -620,6 +636,11 @@ float* forward(Transformer* transformer, int token, int pos) {
         matmul(s->xb2, s->xb, w->wo + l*dim*dim, dim, dim);
 
         // residual connection back into x
+// L2E Addition
+        #ifdef ACCEL
+        ACCELS() // OMP/OACC Macro
+        #endif
+// END L2E Addition
         for (int i = 0; i < dim; i++) {
             x[i] += s->xb2[i];
         }
@@ -633,6 +654,11 @@ float* forward(Transformer* transformer, int token, int pos) {
         matmul(s->hb2, s->xb, w->w3 + l*dim*hidden_dim, dim, hidden_dim);
 
         // SwiGLU non-linearity
+// L2E Addition
+        #ifdef ACCEL
+        ACCELS() // OMP/OACC Macro
+        #endif
+// END L2E Addition
         for (int i = 0; i < hidden_dim; i++) {
             float val = s->hb[i];
             // silu(x)=x*σ(x), where σ(x) is the logistic sigmoid
@@ -926,7 +952,6 @@ void encode(Tokenizer* t, char *text, int8_t bos, int8_t eos, int *tokens, int *
     free(str_buffer);
 
 }
-
 // END L2E Addition
 
 // ----------------------------------------------------------------------------
@@ -1332,7 +1357,14 @@ void error_usage() {
 }
 
 int main(int argc, char *argv[]) {
-
+// L2E Addition
+#ifdef OPENMP
+    int num_threads = omp_get_num_procs(); // get the number of CPU cores
+    omp_set_num_threads(num_threads); // set the number of threads to use for parallel regions
+    int num_levels = omp_get_supported_active_levels(); // get maximum number of nested parallel regions supported
+    omp_set_max_active_levels(num_levels); // set to maximum supported parallel regions
+#endif
+// END L2E Addition
     // default parameters
     char *checkpoint_path = NULL;  // e.g. out/model.bin
     char *tokenizer_path = "tokenizer.bin";

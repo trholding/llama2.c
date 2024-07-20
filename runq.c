@@ -1,4 +1,4 @@
-/* Inference for Llama-2 Transformer model in pure C, int8 quantized forward pass. */
+/* Inference for Llama 2 & Llama 3 Transformer model in pure C, int8 quantized forward pass. */
 
 // L2E Addition
 /* The Llama 2 Everywhere @trholding (Vulcan) fork   */
@@ -1455,7 +1455,6 @@ int main(int argc, char *argv[]) {
     omp_set_num_threads(num_threads); // set the number of threads to use for parallel regions
     int num_levels = omp_get_supported_active_levels(); // get maximum number of nested parallel regions supported
     omp_set_max_active_levels(num_levels); // set to maximum supported parallel regions
-    // printf("OMP > Max Cores: %d : Max Levels : %d \n",num_threads, num_levels);
 #endif
 // END L2E Addition
     // default parameters
