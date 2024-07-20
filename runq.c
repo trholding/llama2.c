@@ -129,8 +129,10 @@ __static_yoink("zipos");
 
 // Portable OpenMP and OpenACC pragma macros
 #ifdef OPENMP
+#define ACCELS() MK_PRAGMA(omp parallel for)
 #define ACCEL(...) MK_PRAGMA(omp parallel for private(__VA_ARGS__))
 #elif defined(OPENACC)
+#define ACCELS() MK_PRAGMA(acc parallel loop)
 #define ACCEL(...) MK_PRAGMA(acc parallel loop private(__VA_ARGS__))
 #endif
 
@@ -154,7 +156,13 @@ __static_yoink("zipos");
 #endif
 // ----------------------------------------------------------------------------
 // Globals
+// L2E Addition
+#if defined CAT
+const int GS = 64; // group size 64 for Cheap Acceleration Tech :)
+#else
 int GS = 0; // group size global for quantization of the weights
+#endif
+// END L2E Addition
 
 // ----------------------------------------------------------------------------
 // Transformer model
@@ -275,6 +283,11 @@ void free_run_state(RunState* s) {
 // Quantization functions
 
 void dequantize(QuantizedTensor *qx, float* x, int n) {
+// L2E Addition
+    #ifdef ACCEL
+    ACCELS() // OMP/OACC Macro
+    #endif
+// END L2E Addition
     for (int i = 0; i < n; i++) {
         x[i] = qx->q[i] * qx->s[i / GS];
     }
@@ -284,6 +297,11 @@ void quantize(QuantizedTensor *qx, float* x, int n) {
     int num_groups = n / GS;
     float Q_MAX = 127.0f;
 
+// L2E Addition
+    #ifdef ACCEL
+    ACCELS() // OMP/OACC Macro
+    #endif
+// END L2E Addition
     for (int group = 0; group < num_groups; group++) {
 
         // find the max absolute value in the current group
@@ -391,7 +409,11 @@ void read_checkpoint(char* checkpoint, Config* config, TransformerWeights* weigh
     int group_size = *(int*) ptr;
     ptr += sizeof(int);
 
+// L2E Addition
+    #ifndef CAT
     GS = group_size; // set as global, as it will be used in many places
+    #endif
+// END L2E Addition
 
     void* weights_ptr = ((char*)*data) + header_size; // skip header bytes
     memory_map_weights(weights, config, weights_ptr, shared_classifier);
@@ -419,7 +441,13 @@ void read_checkpoint(char* checkpoint, Config* config, TransformerWeights* weigh
     if (fread(&shared_classifier, sizeof(uint8_t), 1, file) != 1) { exit(EXIT_FAILURE); }
     int group_size; // the group size used in quantization
     if (fread(&group_size, sizeof(int), 1, file) != 1) { exit(EXIT_FAILURE); }
+
+// L2E Addition
+    #ifndef CAT
     GS = group_size; // set as global, as it will be used in many places
+    #endif
+// END L2E Addition
+
     // figure out the file size
     fseek(file, 0, SEEK_END); // move file pointer to end of file
     *file_size = ftell(file); // get the file size, in bytes
@@ -508,64 +536,77 @@ void softmax(float* x, int size) {
     }
 }
 
+// L2E Addition
+#ifdef CAT
+
 void matmul(float* xout, QuantizedTensor *x, QuantizedTensor *w, int n, int d) {
     // W (d,n) @ x (n,) -> xout (d,)
     // by far the most amount of time is spent inside this little function
     // inputs to this function are both quantized
 
-// L2E Addition
-
-    #ifdef BLAS
     int i;
-    int j;
-    
-    // Convert quantized tensors to floating point
-    float* w_fp = malloc(d * n * sizeof(float));
-    float* x_fp = malloc(n * sizeof(float));
-
     #ifdef ACCEL
-    ACCEL(i, j) // OMP/OACC Macro
-    #endif     
+    ACCEL(i) // OMP/OACC Macro
+    #endif
     for (i = 0; i < d; i++) {
-        for (j = 0; j < n; j++) {
-            w_fp[i * n + j] = ((float) w->q[i * n + j]) * w->s[i / GS];
-        }
-    }
 
-    #ifdef ACCEL
-    ACCEL(j) // OMP/OACC Macro
-    #endif    
-    for (j = 0; j < n; j++) {
-        x_fp[j] = ((float) x->q[j]) * x->s[j / GS];
-    }
-
-    cblas_sgemv(CblasRowMajor, CblasNoTrans, d, n, 1.0f, w_fp, n, x_fp, 1, 0.0f, xout, 1);
-
-    // Free memory
-    free(w_fp);
-    free(x_fp);
-
-    #else
-// END L2E Addition
-    for (int i = 0; i < d; i++) {
         float val = 0.0f;
         int32_t ival = 0;
         int in = i * n;
 
         // do the matmul in groups of GS
-        for (int j = 0; j <= n - GS; j += GS) {
+        int j;
+        for (j = 0; j <= n - GS; j += GS) {
+            // unroll the inner loop by a factor of 4
+            for (int k = 0; k < GS; k += 4) {
+                ival += ((int32_t) x->q[j + k]) * ((int32_t) w->q[in + j + k]);
+                ival += ((int32_t) x->q[j + k + 1]) * ((int32_t) w->q[in + j + k + 1]);
+                ival += ((int32_t) x->q[j + k + 2]) * ((int32_t) w->q[in + j + k + 2]);
+                ival += ((int32_t) x->q[j + k + 3]) * ((int32_t) w->q[in + j + k + 3]);
+            }
+            val += ((float) ival) * w->s[(in + j) / GS] * x->s[j / GS];
+            ival = 0;
+        }
+
+        xout[i] = val;
+    }
+}
+
+#else
+// END L2E Addition
+void matmul(float* xout, QuantizedTensor *x, QuantizedTensor *w, int n, int d) {
+    // W (d,n) @ x (n,) -> xout (d,)
+    // by far the most amount of time is spent inside this little function
+    // inputs to this function are both quantized
+
+    int i;
+// L2E Addition
+    #ifdef ACCEL
+    ACCEL(i) // OMP/OACC Macro
+    #endif
+// END L2E Addition
+    for (i = 0; i < d; i++) {
+
+        float val = 0.0f;
+        int32_t ival = 0;
+        int in = i * n;
+
+        // do the matmul in groups of GS
+        int j;
+        for (j = 0; j <= n - GS; j += GS) {
             for (int k = 0; k < GS; k++) {
                 ival += ((int32_t) x->q[j + k]) * ((int32_t) w->q[in + j + k]);
             }
             val += ((float) ival) * w->s[(in + j) / GS] * x->s[j / GS];
             ival = 0;
         }
+
         xout[i] = val;
     }
-// L2E Addition
-    #endif 
-// END L2E Addition 
 }
+// L2E Addition
+#endif 
+// END L2E Addition 
 
 float* forward(Transformer* transformer, int token, int pos) {
 

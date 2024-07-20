@@ -90,7 +90,7 @@ run_cc_openmp: ##		- OpenMP accelerated build
 
 .PHONY: runq_cc_openmp
 runq_cc_openmp: ##		- Same for quantized build
-	$(CC) -D OPENMP -Ofast -fopenmp -march=native -mtune=native runq.c  $(BOLT) -lm  -o run
+	$(CC) -D OPENMP -D CAT -Ofast -fopenmp -march=native -mtune=native runq.c  $(BOLT) -lm  -o run
 
 .PHONY: run_cc_openacc
 run_cc_openacc: ##		- OpenACC accelerated build
@@ -98,7 +98,7 @@ run_cc_openacc: ##		- OpenACC accelerated build
 
 .PHONY: runq_cc_openacc
 runq_cc_openacc: ##		- Same for quantized build
-	$(CC) -D OPENACC -Ofast -fopenacc -march=native -mtune=native runq.c  $(BOLT) -lm  -o run	
+	$(CC) -D OPENACC -D CAT -Ofast -fopenacc -march=native -mtune=native runq.c  $(BOLT) -lm  -o run	
 
 .PHONY: run_cc_omp_gnu
 run_cc_omp_gnu: ##		- Generic linux distro + OpenMP build
@@ -106,7 +106,7 @@ run_cc_omp_gnu: ##		- Generic linux distro + OpenMP build
 
 .PHONY: runq_cc_omp_gnu
 runq_cc_omp_gnu: ##		- Same for quantized build
-	$(CC) -D OPENMP -Ofast -fopenmp -march=native -mtune=native -std=gnu11 runq.c  $(BOLT) -lm  -o run
+	$(CC) -D OPENMP -D CAT -Ofast -fopenmp -march=native -mtune=native -std=gnu11 runq.c  $(BOLT) -lm  -o run
 
 .PHONY: run_cc_clblast
 run_cc_clblast: ##		- CLBlast OpenCL CBLAS GPU accelerated build
@@ -114,7 +114,7 @@ run_cc_clblast: ##		- CLBlast OpenCL CBLAS GPU accelerated build
 
 .PHONY: runq_cc_clblast
 runq_cc_clblast: ##		- Same for quantized build
-	$(CC) -D OPENMP -D CLBLAST -Ofast -fopenmp -march=native -mtune=native runq.c $(BOLT) -lm -lclblast -o run
+	$(CC) -D OPENMP -D CAT -D CLBLAST -Ofast -fopenmp -march=native -mtune=native runq.c $(BOLT) -lm -lclblast -o run
 
 .PHONY: run_cc_openblas
 run_cc_openblas: ##		- Openblas CBLAS accelerated build
@@ -122,7 +122,7 @@ run_cc_openblas: ##		- Openblas CBLAS accelerated build
 
 .PHONY: runq_cc_openblas
 runq_cc_openblas: ##		- Same for quantized build
-	$(CC) -D OPENMP -D OPENBLAS -Ofast -fopenmp -march=native -mtune=native -I$(OPENBLAS_INC) runq.c $(BOLT) -lm -lopenblas -o run
+	$(CC) -D OPENMP -D CAT -D OPENBLAS -Ofast -fopenmp -march=native -mtune=native -I$(OPENBLAS_INC) runq.c $(BOLT) -lm -lopenblas -o run
 
 .PHONY: run_cc_cblas
 run_cc_cblas: ##		- Generic CBLAS accelerated build
@@ -130,7 +130,7 @@ run_cc_cblas: ##		- Generic CBLAS accelerated build
 
 .PHONY: runq_cc_cblas
 runq_cc_cblas: ##		- Same for quantized build
-	$(CC) -D OPENMP -D CBLAS -Ofast -fopenmp -march=native -mtune=native runq.c $(BOLT) -lm -lcblas -o run
+	$(CC) -D OPENMP -D CAT -D CBLAS -Ofast -fopenmp -march=native -mtune=native runq.c $(BOLT) -lm -lcblas -o run
 
 .PHONY: run_cc_blis
 run_cc_blis: ##		- BLIS accelerated build
@@ -138,7 +138,7 @@ run_cc_blis: ##		- BLIS accelerated build
 	
 .PHONY: runq_cc_blis
 runq_cc_blis: ##		- Same for quantized build
-	$(CC) -D OPENMP -D BLIS -Ofast -fopenmp -march=native -mtune=native -I$(BLIS_INC) runq.c $(BOLT) -lm -lblis -o run
+	$(CC) -D OPENMP -D CAT -D BLIS -Ofast -fopenmp -march=native -mtune=native -I$(BLIS_INC) runq.c $(BOLT) -lm -lblis -o run
 
 ##@ Special Builds 
 ##@ ---> x86_64
@@ -149,7 +149,7 @@ run_cc_mkl: ##		- ***NEW*** OpenMP + Intel MKL CBLAS build (x86_64 / intel Mac)
 
 .PHONY: runq_cc_mkl 
 runq_cc_mkl: ##		- Same for quantized build
-	$(CC) -D MKL -D OPENMP -Ofast -fopenmp -march=native -mtune=native -I$(MKL_INC) -L$(MKL_LIB) runq.c -lmkl_rt -lpthread $(BOLT) -lm -o run	
+	$(CC) -D MKL -D OPENMP -D CAT -Ofast -fopenmp -march=native -mtune=native -I$(MKL_INC) -L$(MKL_LIB) runq.c -lmkl_rt -lpthread $(BOLT) -lm -o run	
 
 ##@ ---> ARM64 / aarch64
 .PHONY: run_cc_armpl
@@ -158,7 +158,7 @@ run_cc_armpl: ##		- ARM PL BLAS accelerated build (aarch64)
 
 .PHONY: runq_cc_armpl
 runq_cc_armpl: ##		- Same for quantized build
-	$(CC) -D ARMPL -D OPENMP -Ofast -fopenmp -march=native -mtune=native runq.c $(BOLT) -lm -larmpl_lp64_mp -o run
+	$(CC) -D ARMPL -D OPENMP -D CAT -Ofast -fopenmp -march=native -mtune=native runq.c $(BOLT) -lm -larmpl_lp64_mp -o run
 
 ##@ ---> Macintosh
 .PHONY: run_cc_mac_accel
@@ -167,7 +167,7 @@ run_cc_mac_accel: ##		- Mac OS OPENMP + CBLAS via Accelerate Framework build (WI
 
 .PHONY: runq_cc_mac_accel
 runq_cc_mac_accel: ##		- Same for quantized build
-	$(CC) -D AAF -D OPENMP -Ofast -fopenmp -march=native -mtune=native runq.c $(BOLT) -lm -framework Accelerate -o run
+	$(CC) -D AAF -D OPENMP -D CAT -Ofast -fopenmp -march=native -mtune=native runq.c $(BOLT) -lm -framework Accelerate -o run
 
 ##@ ---> Windows
 .PHONY: run_win64
