@@ -123,6 +123,10 @@ __static_yoink("zipos");
 // ----------------------------------------------------------------------------
 // OpenMP and OpenACC Support
 
+#ifdef OPENMP
+#include <omp.h>
+#endif
+
 // Macro that makes a pragma enabled with string substitution
 #define MKPRAGMA_(x) _Pragma (#x)
 #define MK_PRAGMA(x) MKPRAGMA_(x)
@@ -632,9 +636,18 @@ float* forward(Transformer* transformer, int token, int pos) {
 
         // qkv matmuls for this position
         quantize(&s->xq, s->xb, dim);
+
+// L2E Addition
+        #pragma omp parallel sections
+        {
+        #pragma omp section
         matmul(s->q, &s->xq, w->wq + l, dim, dim);
+        #pragma omp section
         matmul(s->k, &s->xq, w->wk + l, dim, kv_dim);
+        #pragma omp section
         matmul(s->v, &s->xq, w->wv + l, dim, kv_dim);
+        }
+// END L2E Addition
 
         // RoPE relative positional encoding: complex-valued rotate q and k in each head
         for (int i = 0; i < dim; i+=2) {
@@ -721,8 +734,16 @@ float* forward(Transformer* transformer, int token, int pos) {
         // Now for FFN in PyTorch we have: self.w2(F.silu(self.w1(x)) * self.w3(x))
         // first calculate self.w1(x) and self.w3(x)
         quantize(&s->xq, s->xb, dim);
+
+// L2E Addition
+        #pragma omp parallel sections
+        {
+        #pragma omp section        
         matmul(s->hb, &s->xq, w->w1 + l, dim, hidden_dim);
+        #pragma omp section
         matmul(s->hb2, &s->xq, w->w3 + l, dim, hidden_dim);
+        }
+// END L2E Addition
 
         // SwiGLU non-linearity
         for (int i = 0; i < hidden_dim; i++) {
@@ -1425,7 +1446,15 @@ void error_usage() {
 }
 
 int main(int argc, char *argv[]) {
-
+// L2E Addition
+#ifdef OPENMP
+    int num_threads = omp_get_num_procs(); // get the number of CPU cores
+    omp_set_num_threads(num_threads); // set the number of threads to use for parallel regions
+    int num_levels = omp_get_supported_active_levels(); // get maximum number of nested parallel regions supported
+    omp_set_max_active_levels(num_levels); // set to maximum supported parallel regions
+    // printf("OMP > Max Cores: %d : Max Levels : %d \n",num_threads, num_levels);
+#endif
+// END L2E Addition
     // default parameters
     char *checkpoint_path = NULL;  // e.g. out/model.bin
     char *tokenizer_path = "tokenizer.bin";
