@@ -636,18 +636,9 @@ float* forward(Transformer* transformer, int token, int pos) {
 
         // qkv matmuls for this position
         quantize(&s->xq, s->xb, dim);
-
-// L2E Addition
-        #pragma omp parallel sections
-        {
-        #pragma omp section
         matmul(s->q, &s->xq, w->wq + l, dim, dim);
-        #pragma omp section
         matmul(s->k, &s->xq, w->wk + l, dim, kv_dim);
-        #pragma omp section
         matmul(s->v, &s->xq, w->wv + l, dim, kv_dim);
-        }
-// END L2E Addition
 
         // RoPE relative positional encoding: complex-valued rotate q and k in each head
         for (int i = 0; i < dim; i+=2) {
