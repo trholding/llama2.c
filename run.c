@@ -1,4 +1,4 @@
-/* Inference for Llama 2 & LLama 3 Transformer model in pure C */
+/* Inference for Llama 2 & LLama 3 / 3.1 Transformer model in pure C */
 
 // L2E Addition
 /* The Llama 2 Everywhere @trholding (Vulcan) fork   */

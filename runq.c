@@ -1,4 +1,4 @@
-/* Inference for Llama 2 & Llama 3 Transformer model in pure C, int8 quantized forward pass. */
+/* Inference for Llama 2 & Llama 3 / 3.1 Transformer model in pure C, int8 quantized forward pass. */
 
 // L2E Addition
 /* The Llama 2 Everywhere @trholding (Vulcan) fork   */

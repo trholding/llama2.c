@@ -33,9 +33,88 @@ Learn more about the Llama2 models & architecture at Meta: [Llama 2 @ Meta](http
 
 # Features & Milestones
 
+#### Llama 3.1 Support WIP
+
+* Inference is ~23% faster now. (Commit e842bf7 and above)
+* Buggy, read the Llama3 Section below, looking for faster hardware for faster development
+
+Sample output:
+
+Meta's Llama 3.1 models can output multilingual text which is awesome. Here are some examples output of 8 bit quantized 8b model with 100 token output (-n 100)... 
+
+##### English
+
+```
+./run ../llama3.1_8b_instruct_q8.bin -z tokenizer_l3.bin -l 3 -n 100 -i " My cat is funny"
+My cat is funny. "Funny cat," I say, walking up to it. "What are you up to?" It sits up straight and looks at me with a tilted head, as if to say, "What's wrong with you?" Sometimes I just have to laugh at how funny a cat can be. So I say, "Okay, you're funny. I'll give you some treats." It stretches out a little and I give it some treats. It eats them up quickly and starts
+achieved tok/s: 5.376052
+```
+
+##### German
+
+```
+./run ../llama3.1_8b_instruct_q8.bin -z tokenizer_l3.bin -l 3 -n 100 -i " Besitzen Sie einen Amiga 500?"
+Besitzen Sie einen Amiga 500? Wenn nicht, werden Sie wissen, dass dies ein Computer war, der im späten 1980er und frühen 1990er Jahren für Spiele verfügbar war, die für Personen mit bestimmten Körperverletzungen gedacht waren. Manchmal müssen wir uns an frühere Zeiten erinnern, die, wie wir jetzt wissen, schwierig waren. Hier ist ein Link, der meine Geschichte bespre
+achieved tok/s: 5.367599
+
+```
+
+##### French
+
+
+```
+./run ../llama3.1_8b_instruct_q8.bin -z tokenizer_l3.bin -l 3 -n 100 -i " Le vin français est"
+Le vin français est, à bien des égards, un vin des origines, car il a joué un rôle important dans l'histoire de la France". La réputation des vins de France repose principalement sur leurs qualités gustatives et la gestion des vignobles contrôlée, ce qui rend le vin français un "produit d'exception". La France est donc leader mondial de la production de vin, avec 25 % des exportations mon
+achieved tok/s: 5.43299
+```
+
+##### Thai
+
+```
+./run ../llama3.1_8b_instruct_q8.bin -z tokenizer_l3.bin -l 3 -n 100 -i " แมวของฉันตลก"
+แมวของฉันตลกชอบเล่นบนม้วนกระดาษ และฉันก็ไม่แน่ใจว่าควรจะยินยอมที่จะให้เล่นหรือไม่
+
+เมื่อเวลาผ่านไป ฉันเห็นว่าแมวของฉันเล่นม้วนกระดาษเป็นระยะ ๆ ฉันจึงตัดสินใจที่จะลองปรับเปลี่ยนเกมให้สนุกขึ้น
+achieved tok/s: 5.376052
+```
+
+##### Hindi
+
+```
+./run ../llama3.1_8b_instruct_q8.bin -z tokenizer_l3.bin -l 3 -n 100 -i " मेरी बिल्ली बहुत मज़ाया है"
+मेरी बिल्ली बहुत मज़ाया है और वह हमेशा अपनी शारीरिक गतिविधियों से मुझे मजाक करती है। वास्तव में, जब वह अपनी खिलौनों की चपपेट में आती है तो वह विशेष रूप से क्लासिक बन जाती है। इसके अलावा, वह एक छोटी सी च
+achieved tok/s: 5.460864
+```
+
+Read the Llama 3 section below to understand how to get access to model (https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct) from Meta, and follow this:
+
+```bash
+huggingface-cli download meta-llama/Meta-Llama-3.1-8B-Instruct --include "original/*" --local-dir Meta-Llama-3.1-8B-Instruct
+
+git clone https://github.com/trholding/llama2.c.git
+
+cd llama2.c/
+
+# Export Quantized 8bit 
+python3 export.py ../llama3.1_8b_instruct_q8.bin --version 2 --meta-llama ../Meta-Llama-3.1-8B-Instruct/original/
+
+# Fastest Quantized Inference build
+make runq_cc_openmp
+
+# Test Llama 3.1 inference, it should generate sensible text
+./run ../llama3.1_8b_instruct_q8.bin -z tokenizer_l3.bin -l 3 -i " My cat"
+
+```
+
 #### Llama 3 Support WIP
 
 Llama3 models work now.
+
+* Non quantized (fp32) is supported. run supports both llama2 and llama3 with -l 3 option.
+* Quantized inference with runq supported now.
+* Known issues - Swallows first token (add space for now), chat mode doesn't work yet, fix coming soonish
+* Overall buggy for now
+
 
 Sample output:
 
@@ -57,9 +136,6 @@ I clinked my glass against his. "To the strange and wonderful patrons of this fi
 achieved tok/s: 4.356963
 ```
 
-* Non quantized (fp32) is supported. run supports both llama2 and llama3 with -l 3 option.
-* Quantized inference with runq supported now.
-* Known issues - Swallows first token (add space for now), chat mode doesn't work yet, fix coming soonish
 
 First you'll need to obtain approval from Meta to download llama3 models on hugging face.
 
@@ -74,16 +150,16 @@ git clone https://github.com/trholding/llama2.c.git
 cd llama2.c/
 
 # Export fp32
-python3 export.py ../llama3_8b_instruct.bin --meta-llama ../Meta-Llama-3-8B-Instruct/original/
+#python3 export.py ../llama3_8b_instruct.bin --meta-llama ../Meta-Llama-3-8B-Instruct/original/
 
 # Export Quantized 8bit 
 python3 export.py ../llama3_8b_instruct_q8.bin --version 2 --meta-llama ../Meta-Llama-3-8B-Instruct/original/
 
-make run_cc_openblas
-# or make run_cc_openmp, or do make to see all builds 
+make runq_cc_openmp
+# or do make to see all builds 
 
-# Test llama3 inference, it should generate sensible text very slowly
-./run ../llama3_8b_instruct.bin -z tokenizer_l3.bin -l 3
+# Test Llama 3 inference, it should generate sensible text
+ ./run ../llama3_8b_instruct_q8.bin -z tokenizer_l3.bin -l 3 -i " My cat"
 
 ```
 
