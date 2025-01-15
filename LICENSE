@@ -1,3 +1,8 @@
+# License Notice
+
+## Original Code
+Original repository contents are licensed under the MIT License and remain the copyright of their respective contributors:
+
 MIT License
 
 Copyright (c) 2023 Andrej
@@ -19,3 +24,18 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## L2E Components
+Modifications and additions by Vulcan Ignis are licensed under the L2E Non-Commercial Research License, permitting research and non-commercial use with attribution. Copyright © Vulcan Ignis.
+
+## Dual License Structure
+- Original components: MIT License
+- L2E components: L2E Non-Commercial Research License (prohibits commercial use, requires attribution)
+
+## Additional Components
+- Tools, libraries, and dependencies used during conditional compilation: Subject to their respective licenses
+- GNU/Linux kernel L2E module glue code: GNU GPL v2, Copyright © Vulcan Ignis
+
+**Note:** All outputs including demonstrations, binaries, generated formats, and releases are governed by the L2E Non-Commercial Research License.
+
+
