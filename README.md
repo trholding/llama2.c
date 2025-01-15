@@ -746,10 +746,8 @@ wget https://huggingface.co/karpathy/tinyllamas/resolve/main/stories15M.bin -O o
 
 ## TODO
 
-- [ ] MPI / PVM / PBLAS
 - [ ] Clean up README.md
 - [ ] Add every project used to credits
-- [ ] Update License to mention all licenses involved
  
 ## Changelog
 
@@ -760,10 +758,6 @@ See commits. Going forward we will diverge wildly from karpathy llama2.c
 - All pull requests that are merged to upstream will be automatically applied here as we closely mirror upstream. 
 - I merge pull requests that improves performance even if they are rejected upstream.
 - Performance and usability improvement contriubutions are welcome.
-
-## Developer Status
-
-See "Developer Status" issue.
 
 # Gratitude & Credits
 
@@ -792,4 +786,22 @@ Thank you to to the creators of the following libraries and tools and their cont
 
 ## License
 
-MIT, GNU GPL, BSD and other depending on build options
+L2E NCRL, MIT, GNU GPL, BSD and other depending on build options
+
+# License Notice
+
+## Original Code
+Original repository contents are licensed under the MIT License and remain the copyright of their respective contributors.
+
+## L2E Components
+Modifications and additions by Vulcan Ignis are licensed under the L2E Non-Commercial Research License (L2E NCRL), permitting research and non-commercial use with attribution. Copyright © Vulcan Ignis.
+
+## Dual License Structure
+- Original components: MIT License
+- L2E components: L2E Non-Commercial Research License (prohibits commercial use, requires attribution)
+
+## Additional Components
+- Tools, libraries, and dependencies used during conditional compilation: Subject to their respective licenses
+- GNU/Linux kernel L2E module glue code: GNU GPL v2, Copyright © Vulcan Ignis
+
+**Note:** All outputs including demonstrations, binaries, generated formats, and releases are governed by the L2E Non-Commercial Research License.
