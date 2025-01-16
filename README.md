@@ -4,6 +4,9 @@
   <img src="assets/l2e_sky_fun.png" width="600" height="600" alt="LLamas Everywhere!">
 </p>
 
+The above is L2E Llama2.c in a PDF in a Shroedinger PNG which is both a PNG and a PDF
+Download the image, change extension from png to pdf and open in Firefox.
+
 Note: Much gratitude for all the upvotes on HN, Twitter, Reddit and other places. Check out my X for Amiga, Atari, Vintage Mac ports...
 
 Standalone, Portable, Bootable Llama 2
